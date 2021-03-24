@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace BasicRedisCacingExampleInDotNetCore
 {
@@ -30,9 +32,24 @@ namespace BasicRedisCacingExampleInDotNetCore
                 configuration.RootPath = "ClientApp/dist";
             });
 
+            var redisEndpointUrl = (Environment.GetEnvironmentVariable("REDIS_ENDPOINT_URL") ?? "127.0.0.1:6379").Split(':');
+            var redisHost = redisEndpointUrl[0];
+            var redisPort = redisEndpointUrl[1];
+
+            string redisConnectionUrl = string.Empty;
+            var redisPassword = Environment.GetEnvironmentVariable("REDIS_PASSWORD");
+            if (redisPassword != null)
+            {
+                redisConnectionUrl = $"{redisHost}:{redisPort},password={redisPassword}";
+            }
+            else
+            {
+                redisConnectionUrl = $"{redisHost}:{redisPort}";
+            }
+
             services.AddStackExchangeRedisCache(options =>
             {
-                options.ConfigurationOptions = ConfigurationOptions.Parse(string.Format("{0},password={1}", Configuration["Redis:ServerUrl"], Configuration["Redis:Password"]));
+                options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionUrl);
             });
         }
 
@@ -54,15 +71,29 @@ namespace BasicRedisCacingExampleInDotNetCore
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+
             });
 
-            app.UseSpa(spa =>
+            app.Map(new PathString(""), client =>
+            {
+                var clientPath = Path.Combine(Directory.GetCurrentDirectory(), "./ClientApp/dist");
+                StaticFileOptions clientAppDist = new StaticFileOptions()
+                {
+                    FileProvider = new PhysicalFileProvider(clientPath)
+                };
+                client.UseSpaStaticFiles(clientAppDist);
+                client.UseSpa(spa => { spa.Options.DefaultPageStaticFileOptions = clientAppDist; });
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(name: "default", pattern: "{controller}/{action=Index}/{id?}");
+                });
+            });
+
+            /*app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
-            });
+            });*/
         }
     }
 }
