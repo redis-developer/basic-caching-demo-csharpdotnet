@@ -1,5 +1,6 @@
 {
     "name": "Basic Redis Caching Demo .Net Core 5",
+    "stack": "container",
     "env": {
         "REDIS_ENDPOINT_URL": {
             "description": "Redis server host:port, ex: 127.0.0.1:6379",
@@ -11,7 +12,7 @@
         },
         "PORT": {
             "description": "Public port",
-            "value": 5000
+            "value": 80
         }
     }
 }
