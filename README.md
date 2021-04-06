@@ -1,31 +1,49 @@
-﻿
-
-
-<div style="height: 150px"></div>
+﻿<div style="height: 150px"></div>
 
 # Basic Redis Caching Demo
 
 This app returns the number of repositories a Github account has. When you first search for an account, the server calls Github's API to return the response. This can take 100s of milliseconds. The server then adds the details of this slow response to Redis for future requests. When you search again, the next response comes directly from Redis cache instead of calling Github. The responses are usually usually in a millisecond or so making it blazing fast.
 
-
 ## How it works?
 
 ![How it works](docs/screenshot001.png)
 
-
 ### 1. How the data is stored:
-```
-SETEX microsoft 3600 1000
+
+- Set the number of repositories for the account (use the user name for key): `SETEX <account name> <number of public repos> <seconds till expire>`
+  - E.g `SETEX microsoft 197 1000`
+
+##### Code example:
+
+```C#
+var data = new ResponseModel {
+    Repos = gitData.PublicRepos.ToString(), Username = username, Cached = true
+};
+await distributedCache.SetStringAsync($"/repos/:{username}",
+    JsonConvert.SerializeObject(data),
+    new DistributedCacheEntryOptions() {
+     AbsoluteExpiration = DateTimeOffset.UtcNow.AddSeconds(3)
+});
 ```
 
 ### 2. How the data is accessed:
-```
-GET microsoft
+
+- Get number of public repositories for an account: `GET <account name>`
+  - E.g `GET microsoft`
+
+##### Code example:
+
+```C#
+var cache = await distributedCache.GetStringAsync($"/repos/:{username}");
+if (string.IsNullOrEmpty(cache))
+{
+    // ...
 ```
 
 ## How to run it locally?
 
 #### Write in environment variable or Dockerfile actual connection to Redis:
+
 ```
    PORT = "API port"
    REDIS_ENDPOINT_URL = "Redis server URI"
@@ -41,9 +59,11 @@ yarn serve
 
 #### Run backend
 
-``` sh
+```sh
 dotnet run
 ```
+
+Open in your berwser: [localhost:5000](http://localhost:5000)
 
 ## Try it out
 
@@ -55,4 +75,10 @@ dotnet run
     </a>
 </p>
 
-Open in your berwser: [localhost:5000](http://localhost:5000)
+#### Deploy to Google Cloud
+
+<p>
+    <a href="https://deploy.cloud.run" target="_blank">
+        <img src="https://deploy.cloud.run/button.svg" alt="Run on Google Cloud" width="150px"/>
+    </a>
+</p>
