@@ -12,7 +12,7 @@ Here's a short video that explains the project and how it uses Redis:
 
 ## How it works?
 
-![How it works](docs/screenshot001.png)
+![How it works](https://raw.githubusercontent.com/redis-developer/basic-caching-demo-csharpdotnet/master/docs/screenshot001.png)
 
 ### 1. How the data is stored:
 
