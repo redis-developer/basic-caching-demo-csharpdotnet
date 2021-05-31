@@ -20,10 +20,10 @@
   "redis_features": ["Caching"],
   "redis_modules": [],
   "app_image_urls": [
-    "https://github.com/redis-developer/basic-caching-demo-csharpdotnet/master/docs/screenshot001.png"
+    "https://raw.githubusercontent.com/redis-developer/basic-caching-demo-csharpdotnet/master/docs/screenshot001.png"
   ],
   "youtube_url": "https://youtube.com/watch?v=Ov18gLo0Da8",
   "special_tags": [],
   "verticals": ["Caching"],
-  "markdown": "https://github.com/redis-developer/basic-caching-demo-csharpdotnet/master/README.md"
+  "markdown": "https://raw.githubusercontent.com/redis-developer/basic-analytics-dashboard-redis-bitmaps-nodejs/main/README.md"
 }
