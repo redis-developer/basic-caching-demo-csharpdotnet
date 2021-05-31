@@ -8,7 +8,7 @@ This app returns the number of repositories a Github account has. When you first
 
 Here's a short video that explains the project and how it uses Redis:
 
-[![Watch the video on YouTube](docs/YTThumbnail.png)](https://youtube.com/watch?v=Ov18gLo0Da8)
+[![Watch the video on YouTube](https://github.com/redis-developer/basic-caching-demo-csharpdotnet/raw/master/docs/YTThumbnail.png)](https://youtube.com/watch?v=Ov18gLo0Da8)
 
 ## How it works?
 
