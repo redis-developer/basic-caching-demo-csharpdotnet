@@ -1,20 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace BasicRedisCacingExampleInDotNetCore.Models
 {
     public class ResponseModel
     {
-        [JsonProperty("username")]
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
-        [JsonProperty("repos")]
+        [JsonPropertyName("repos")]
         public string Repos { get; set; }
 
-        [JsonProperty("cached")]
+        [JsonPropertyName("cached")]
         public bool Cached { get; set; }
     }
 }

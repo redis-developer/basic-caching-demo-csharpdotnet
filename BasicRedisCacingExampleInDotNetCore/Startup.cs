@@ -1,15 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 
 namespace BasicRedisCacingExampleInDotNetCore
 {
@@ -46,11 +45,11 @@ namespace BasicRedisCacingExampleInDotNetCore
             {
                 redisConnectionUrl = $"{redisHost}:{redisPort}";
             }
-
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionUrl);
-            });
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("dotnet");
+            client.BaseAddress = new Uri("https://api.github.com");
+            services.AddSingleton(client);
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionUrl));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

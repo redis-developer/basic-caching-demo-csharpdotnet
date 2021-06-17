@@ -1,14 +1,12 @@
 ﻿using BasicRedisCacingExampleInDotNetCore.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
+using StackExchange.Redis;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BasicRedisCacingExampleInDotNetCore.Controllers
@@ -17,44 +15,42 @@ namespace BasicRedisCacingExampleInDotNetCore.Controllers
     [Route("[controller]")]
     public class ReposController : ControllerBase
     {
-        private readonly ILogger<ReposController> logger;
-        private readonly IDistributedCache distributedCache;
+        private readonly IConnectionMultiplexer _redis;
+        private readonly HttpClient _client;
 
-        public ReposController(ILogger<ReposController> logger, IDistributedCache distributedCache)
+        public ReposController(IConnectionMultiplexer redis, HttpClient client)
         {
-            this.logger = logger;
-            this.distributedCache = distributedCache;
+            _redis = redis;
+            _client = client;
         }
 
+        /// <summary>
+        /// Gets the number of repos for a user/organization
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         [HttpGet("{username}")]
-        public async Task<IActionResult> Get(string username)
+        public async Task<IActionResult> GetRepoCount(string username)
         {
-            var timer = new Stopwatch();
-            timer.Start();
+            var db = _redis.GetDatabase();
+            var timer = Stopwatch.StartNew();
 
-            var cache = await distributedCache.GetStringAsync($"/repos/:{username}");
+            //check if we've already seen that username recently
+            var cache = await db.StringGetAsync($"repos:{username}");
+                        
             if (string.IsNullOrEmpty(cache))
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("Chrome");
-                    using (HttpResponseMessage res = await client.GetAsync($"https://api.github.com/users/{username}"))
-                    using (HttpContent content = res.Content)
-                    {
-                        string jsonStr = await content.ReadAsStringAsync();
-                        var gitData = JsonConvert.DeserializeObject<GitResponseModel>(jsonStr);
-                        var data = new ResponseModel { Repos = gitData.PublicRepos.ToString(), Username = username, Cached = true };
-                        await distributedCache.SetStringAsync($"/repos/:{username}", JsonConvert.SerializeObject(data), new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.UtcNow.AddSeconds(3) });
-                        data.Cached = false;
-                        cache = JsonConvert.SerializeObject(data);
-                    }
-                }
+                //Since we haven't seen this username recently, let's grab it from the github API
+                var gitData = await _client.GetFromJsonAsync<GitResponseModel>($"users/{username}");
+                var data = new ResponseModel { Repos = gitData.PublicRepos.ToString(), Username = username, Cached = true };
+                await db.StringSetAsync($"repos:{username}", JsonSerializer.Serialize(data), expiry: TimeSpan.FromSeconds(60));
+                data.Cached = false;
+                cache = JsonSerializer.Serialize(data);
             }
 
             timer.Stop();
             TimeSpan timeTaken = timer.Elapsed;
-            Response.Headers.Add("x-response-time", new Microsoft.Extensions.Primitives.StringValues(timeTaken.Seconds + "." + timeTaken.Milliseconds + "ms"));
-
+            Response.Headers.Add("x-response-time", $"{timeTaken.Seconds}.{timeTaken.Milliseconds}ms");
             return Content(cache, "application/json");
         }
     }

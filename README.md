@@ -2,7 +2,7 @@
 
 # Basic Redis Caching Demo
 
-This app returns the number of repositories a Github account has. When you first search for an account, the server calls Github's API to return the response. This can take 100s of milliseconds. The server then adds the details of this slow response to Redis for future requests. When you search again, the next response comes directly from Redis cache instead of calling Github. The responses are usually usually in a millisecond or so making it blazing fast.
+This app returns the number of repositories a GitHub account has. When you first search for an account, the server calls GitHub's API to return the response. This can take 100s of milliseconds. The server then adds the details of this slow response to Redis for future requests. When you search again, the next response comes directly from Redis cache instead of calling GitHub. The responses are usually usually in a millisecond or so making it blazing fast.
 
 # Overview video
 
@@ -22,13 +22,8 @@ Here's a short video that explains the project and how it uses Redis:
 ##### Code example:
 
 ```C#
-var data = new ResponseModel {
-    Repos = gitData.PublicRepos.ToString(), Username = username, Cached = true
-};
-await distributedCache.SetStringAsync($"/repos/:{username}",
-    JsonConvert.SerializeObject(data),
-    new DistributedCacheEntryOptions() {
-     AbsoluteExpiration = DateTimeOffset.UtcNow.AddSeconds(3)
+var data = new ResponseModel { Repos = gitData.PublicRepos.ToString(), Username = username, Cached = true };
+await db.StringSetAsync($"repos:{username}", JsonSerializer.Serialize(data), expiry: TimeSpan.FromSeconds(60));
 });
 ```
 
@@ -40,7 +35,8 @@ await distributedCache.SetStringAsync($"/repos/:{username}",
 ##### Code example:
 
 ```C#
-var cache = await distributedCache.GetStringAsync($"/repos/:{username}");
+var cache = await db.StringGetAsync($"repos:{username}");
+
 if (string.IsNullOrEmpty(cache))
 {
     // ...
@@ -51,16 +47,8 @@ if (string.IsNullOrEmpty(cache))
 #### Write in environment variable or Dockerfile actual connection to Redis:
 
 ```
-   PORT = "API port"
-   REDIS_ENDPOINT_URL = "Redis server URI"
+   REDIS_ENDPOINT_URL = "Redis server URI:PORT_NUMBER"
    REDIS_PASSWORD = "Password to the server"
-```
-
-#### Run frontend (in ClientApp folder)
-
-```sh
-yarn
-yarn serve
 ```
 
 #### Run backend
@@ -69,7 +57,7 @@ yarn serve
 dotnet run
 ```
 
-Open in your berwser: [localhost:5000](http://localhost:5000)
+Open in your browser: [localhost:5000](http://localhost:5000)
 
 ## Try it out
 
