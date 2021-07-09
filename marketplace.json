@@ -17,7 +17,7 @@
   ],
   "language": ["C#"],
   "redis_commands": ["SETEX", "GET"],
-  "redis_features": ["Caching"],
+  "redis_features": [],
   "redis_modules": [],
   "app_image_urls": [
     "https://raw.githubusercontent.com/redis-developer/basic-caching-demo-csharpdotnet/master/docs/screenshot001.png"
