@@ -24,6 +24,6 @@
   ],
   "youtube_url": "https://youtube.com/watch?v=Ov18gLo0Da8",
   "special_tags": [],
-  "verticals": ["Caching"],
+  "verticals": [],
   "markdown": "https://raw.githubusercontent.com/redis-developer/basic-analytics-dashboard-redis-bitmaps-nodejs/main/README.md"
 }
