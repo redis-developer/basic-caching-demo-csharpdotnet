@@ -2,7 +2,7 @@
   "app_name": "Redis Caching Example",
   "description": "Basic Redis Caching Demo App on C# (.NetCore 5)",
   "type": "Building Block",
-  "contributed_by": "Redis Labs",
+  "contributed_by": "Redis",
   "repo_url": "https://github.com/redis-developer/basic-caching-demo-csharpdotnet",
   "preview_image_url": "https://raw.githubusercontent.com/redis-developer/basic-caching-demo-csharpdotnet/master/images/app_preview_image.png",
   "download_url": "https://github.com/redis-developer/basic-caching-demo-csharpdotnet/archive/refs/heads/master.zip",
@@ -16,10 +16,15 @@
       "Google": "https://deploy.cloud.run/?git_repo=https://github.com/redis-developer/basic-caching-demo-csharpdotnet.git"
     }
   ],
-  "language": ["C#"],
-  "redis_commands": ["SETEX", "GET"],
+  "language": [
+    "C#"
+  ],
+  "redis_commands": [
+    "SETEX",
+    "GET"
+  ],
+  "redis_use_cases": [],
   "redis_features": [],
-  "redis_modules": [],
   "app_image_urls": [
     "https://raw.githubusercontent.com/redis-developer/basic-caching-demo-csharpdotnet/master/docs/screenshot001.png"
   ],
